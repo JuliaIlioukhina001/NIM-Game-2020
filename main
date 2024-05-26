@@ -1,0 +1,419 @@
+/*Julia Ilioukhina
+This program allows a user to play NIM with the computer or with another player*/
+import java.util.Scanner;
+class Main {
+  public static void main(String[] args) {
+    Scanner input= new Scanner (System.in);
+    String name;
+
+    int a=assignNum("a");
+    int b=assignNum("b");
+    int c=assignNum("c");
+
+    System.out.print("Would you like to play against the computer or would you like to play a 2-player game (enter 'computer' or '2-player')?: ");
+    String choice= input.next();
+
+    if (choice.equals("computer")){
+      System.out.print("Please enter your name: ");
+      name= input.next();
+      System.out.println("Okay let's play!");
+      fancyDisplay(a,b,c);
+      computerNim(a, b, c, name);
+    }
+    else if (choice.equals("2-player")){
+      System.out.print("Player 1, enter your name: ");
+      name= input.next();
+      System.out.print("Player 2, enter your name: ");
+      String name2= input.next();
+      System.out.println("Okay let's play!");
+      fancyDisplay(a,b,c);
+      playNim(a, b, c, name, name2);
+    }
+    else
+      System.out.println("Sorry, that choice was invalid.");
+  }
+  //Allows NIM to be played between 2 players
+  public static void playNim (int a, int b, int c, String name1, String name2){
+    Scanner input= new Scanner(System.in);
+    String currName=name1;
+    String currPile="";
+    int remove=0;
+    int nameCount=0;
+
+    while (a+b+c!=0) {
+      System.out.print(currName+", choose a pile: ");
+      currPile=pileCheatCheck(input.next(),currName, a, b, c);
+      System.out.print("How many to remove from pile "+ currPile+": ");
+      remove=input.nextInt();
+      if (currPile.equals("A")) {
+        remove= removeCheatCheck(a, remove, currPile);
+        a-=remove;
+      }
+      else if (currPile.equals("B")){
+        remove= removeCheatCheck(b, remove, currPile);
+        b-=remove;
+      } 
+      else if (currPile.equals("C")) {
+        remove= removeCheatCheck(c, remove, currPile);
+        c-=remove;
+      }
+  
+      fancyDisplay(a,b,c);
+      nameCount++;
+      if (nameCount%2==0)
+        currName=name1;
+      else
+        currName=name2;
+    }
+
+    System.out.println(currName+", there are no counters left so you WIN!");
+  }
+  //Allows NIM to be played between a player and the computer
+  public static void computerNim (int a, int b, int c, String name){
+    Scanner input= new Scanner(System.in);
+    String currPile="";
+    int remove=0;
+    int turnCount;
+    System.out.print("Would you like to go first (yes/no)? ");
+    String choice= input.next();
+    int randomPile;
+    boolean finished;
+    int nimSumSizes=0;
+    int nimSumA=0;
+    int nimSumB=0;
+    int nimSumC=0;
+    int pileCount;
+    int oneCount;
+
+    if (choice.equals("yes"))
+      turnCount=0;
+    else if (choice.equals("no"))
+      turnCount=1;
+    else{
+      System.out.println("Your choice was invalid so the computer will automatically go first.");
+      turnCount=1;
+    }
+
+    while (a+b+c!=0) {
+      finished=false;
+      if (turnCount%2==0){
+        System.out.print(name+", choose a pile: ");
+        currPile=pileCheatCheck(input.next(),name, a, b, c);
+        System.out.print("How many to remove from pile "+ currPile+": ");
+        remove=input.nextInt();
+        if (currPile.equals("A")) {
+          remove= removeCheatCheck(a, remove, currPile);
+          a-=remove;
+        }
+        else if (currPile.equals("B")){
+          remove= removeCheatCheck(b, remove, currPile);
+          b-=remove;
+        } 
+        else if (currPile.equals("C")) {
+          remove= removeCheatCheck(c, remove, currPile);
+          c-=remove;
+        }
+      }
+      else{
+        oneCount=0;
+        pileCount=3;
+        if (a==1)
+          oneCount++;
+        else if (a==0)
+          pileCount--;
+        if (b==1)
+          oneCount++;
+        else if (b==0)
+          pileCount--;
+        if (c==1)
+          oneCount++;
+        else if (c==0)
+          pileCount--;
+
+        if (oneCount==2&&pileCount==3){
+          if (a!=1)
+            a=compRemove(a,a-1,"A");
+          else if (b!=1)
+            b=compRemove(b,b-1,"B");
+          else if (c!=1)
+            c=compRemove(c,c-1,"C");
+        }
+
+        else if (pileCount==3){
+          nimSumSizes= nimSum(a, b, c);
+          if (nimSumSizes==0){
+            while (!finished){
+              randomPile=(int)(Math.random()*3)+1;
+              if (randomPile==1&&a!=0){
+                a=randomRemover(a,"a");
+                finished=true;
+              }
+              else if (randomPile==2&&b!=0){
+                b=randomRemover(b,"b");
+                finished=true;
+              }
+              else if (randomPile==3&&c!=0){
+                c=randomRemover(c,"c");
+                finished=true;
+              }
+            }
+
+          }
+          else{
+            nimSumA= nimSum(a, nimSumSizes, 0);
+            nimSumB= nimSum(b, nimSumSizes, 0);;
+            nimSumC= nimSum(c, nimSumSizes, 0);
+            if (nimSumA<a)
+              a=compRemove(a,a-nimSumA,"A");
+            else if (nimSumB<b)
+              b=compRemove(b,b-nimSumB,"B");
+            else if (nimSumC<c)
+              c=compRemove(c,c-nimSumC,"C");
+            else{
+              while (!finished){
+                randomPile=(int)(Math.random()*3)+1;
+                if (randomPile==1&&a!=0){
+                a=randomRemover(a,"a");
+                finished=true;
+                }
+                else if (randomPile==2&&b!=0){
+                b=randomRemover(b,"b");
+                finished=true;
+               }
+                else if (randomPile==3&&c!=0){
+                  c=randomRemover(c,"c");
+                  finished=true;
+              }
+             }
+            }
+          }
+        }
+      
+        else if (oneCount==1&&pileCount==2){
+          if (a!=1&&a!=0)
+            a=compRemove(a,a,"A");
+          else if (b!=1&&b!=0)
+            b=compRemove(b,b,"B");
+          else if (c!=1&&c!=0)
+            c=compRemove(c,c,"C");
+        }
+
+        else if (pileCount==1){
+          if (a==1)
+            a=compRemove(a,a,"A");
+          else if (a>1)
+            a=compRemove(a,a-1,"A");
+          if (b==1)
+            b=compRemove(b,b,"B");
+          else if (b>1)
+            b=compRemove(b,b-1,"B");
+          if (c==1)
+            c=compRemove(c,c,"C");
+          else if (c>1)
+            c=compRemove(c,c-1,"C");
+        }
+
+        else{
+          if (a>1&&b>1){
+            nimSumSizes= nimSum(a, b, 0);
+            if (nimSumSizes>0){
+              nimSumA= nimSum(a, nimSumSizes, 0);
+              nimSumB= nimSum(b, nimSumSizes, 0);
+              if (nimSumA<a)
+                a=compRemove(a,a-nimSumA,"A");
+              else if (nimSumB<b)
+                b=compRemove(b,b-nimSumB,"B");
+              finished=true;
+            }
+          }
+          else if (a>1&&c>1){
+            nimSumSizes= nimSum(a, c, 0);
+            if (nimSumSizes>0){
+              nimSumA= nimSum(a, nimSumSizes, 0);
+              nimSumC= nimSum(c, nimSumSizes, 0);
+              if (nimSumA<a)
+                a=compRemove(a,a-nimSumA,"A");
+              else if (nimSumC<c)
+                c=compRemove(c,c-nimSumC,"C");
+              finished=true;
+            }
+          }
+          else if (b>1&&c>1){
+            nimSumSizes= nimSum(b, c, 0);
+            if (nimSumSizes>0){
+              nimSumB= nimSum(b, nimSumSizes, 0);
+              nimSumC= nimSum(c, nimSumSizes, 0);
+
+             if (nimSumB<b)
+                b=compRemove(b,b-nimSumB,"B");
+              else if (nimSumC<c)
+                c=compRemove(c,c-nimSumC,"C");
+              finished=true;
+            }
+          }
+
+          if (!finished){
+            while (!finished){
+              randomPile=(int)(Math.random()*3)+1;
+              if (randomPile==1&&a!=0){
+               a=randomRemover(a,"A");
+                finished=true;
+             }
+              else if (randomPile==2&&b!=0){
+                b=randomRemover(b,"B");
+                finished=true;
+              }
+              else if (randomPile==3&&c!=0){
+                c=randomRemover(c,"C");
+                finished=true;
+              }
+            }
+          }
+        }
+      }
+      fancyDisplay(a,b,c);
+      turnCount++;
+    }
+    
+    if (turnCount%2==0)
+      System.out.println("Congratulations! You have won!");
+    
+    else
+      System.out.println("Oh no! The computer has beat you!");
+  }
+  //Makes sure the user is not choosing a pile that does not work
+  public static String pileCheatCheck(String choice, String name, int a, int b, int c) {
+    Scanner input= new Scanner(System.in);
+    while ((choice.equals("A")&&a==0)||(choice.equals("B")&&b==0)||(choice.equals("C")&&c==0)||(!choice.equals("A")&&!choice.equals("B")&&!choice.equals("C"))) {
+      if (!choice.equals("A")&&!choice.equals("B")&&!choice.equals("C")){
+        System.out.print("Sorry, you have mistyped the name of the pile. Make sure that you have typed it as a capital and have typed it properly. Choose again: ");
+        choice= input.next();
+      }
+      else{
+        System.out.print("Nice try, "+name+". That pile is empty. Choose again: ");
+        choice= input.next();
+      }
+    }
+    return choice;
+  }
+  //Makes sure the user us removing a valid amount of counters
+  public static int removeCheatCheck (int pile, int remove, String pileName){
+    Scanner input= new Scanner(System.in);
+    while (remove<1||pile-remove<0){
+      if (remove<1){
+        System.out.print("You must choose at least 1. How many? ");
+        remove=input.nextInt();
+      }
+      else{
+        System.out.print("Pile "+pileName+" doesn't have that many. Try again: ");
+        remove= input.nextInt();
+      }
+    }
+    return remove;
+  }
+  //Displays the counters as "*"'s'
+  public static void fancyDisplay(int a, int b, int c){
+    int current;
+    for (int i=0; i<3; i++){
+      current=0;
+      if (i==0&&a!=0){
+        current=a;
+        System.out.print("A: ");
+      }
+      else if (i==1&&b!=0){
+        current=b;
+        System.out.print("B: ");
+      }
+      else if (i==2&&c!=0){
+        current=c;
+        System.out.print("C: ");
+      }
+      if (current!=0){
+        for (int z=0; z<current;z++){
+         System.out.print("*");
+        }
+       System.out.println("");
+      }
+    }
+  }
+  //Uses user input to assign the number of counters in a pile
+  public static int assignNum(String pileName){
+    Scanner input= new Scanner (System.in);
+    System.out.print("Please enter how many counters you want in pile "+pileName+": ");
+    return input.nextInt();
+  }
+
+  //Calculates the NIM sum of 2 or 3 numbers
+  public static int nimSum (int a, int b, int c){
+    int[] numbers= new int[a+b+c];
+    int currentPile=0;
+    int total=0;
+    boolean used;
+    int nimSum=0;
+    int powerAmount;
+    int counter;
+    int index=0;
+    for (int t=0; t<3; t++){
+      
+      powerAmount=0;
+      if (t==0)
+        currentPile=a;
+      else if (t==1)
+        currentPile=b;
+      else
+        currentPile=c;
+      
+      if (currentPile!=0){
+        counter=currentPile;
+
+        while (counter!=1){
+          counter/=2;
+          powerAmount++;
+        }
+
+        while (currentPile!=0){
+          used=false;
+          if (currentPile/(int)(Math.pow(2,powerAmount))>0){
+            currentPile-=(int)(Math.pow(2,powerAmount));
+            if (t==0){
+              numbers[index]= (int)(Math.pow(2,powerAmount));
+              index++;
+            }
+            else{
+              for (int w=0; w<index; w++){
+                if (numbers[w]==(int)(Math.pow(2,powerAmount))){
+                  used=true;
+                  numbers[w]=0;
+                }
+              }
+              if (!used){
+                numbers[index]= (int)(Math.pow(2,powerAmount));
+                index++;
+              }
+            }
+          }
+        powerAmount--;
+        }
+      }
+    }
+    for (int j=0; j<index; j++){
+      nimSum+=numbers[j];
+    }
+    return nimSum;
+  }
+
+  //Removes a random yet valid amount of counters
+  public static int randomRemover (int pileTotal, String pileName){
+    int randomRemove=(int)(Math.random()*pileTotal)+1;
+    pileTotal-=randomRemove;
+    System.out.println("The computer shall remove "+randomRemove+" from pile "+pileName+".");
+    return pileTotal;
+  }
+
+  //Removes a certain amount of counters during the computers turn (the amount to be removed is one of the variables passed into the parameter) 
+  public static int compRemove (int pile, int remove, String pileName){
+    System.out.println("The computer shall remove "+remove+" from pile "+pileName+".");
+    pile-=remove;
+    return pile;
+  }
+}
